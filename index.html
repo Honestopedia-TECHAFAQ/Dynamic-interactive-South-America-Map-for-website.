@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Interactive Map of South America</title>
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+<style>
+    #map {
+        height: 500px;
+        width: 100%;
+    }
+    .info-box {
+        display: none;
+        position: absolute;
+        background-color: #fff;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        z-index: 1000;
+    }
+</style>
+</head>
+<body>
+
+<div class="container">
+    <div id="map"></div>
+    <div id="info"></div>
+</div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.7.1/dist/leaflet.js"></script>
+<script>
+    var map = L.map('map').setView([-14.2350, -51.9253], 4);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+    var countries = [
+        { name: 'Argentina', lat: -38.4161, lng: -63.6167, info: 'Argentina info content' },
+        { name: 'Brazil', lat: -14.2350, lng: -51.9253, info: 'Brazil info content' },
+    ];
+    countries.forEach(function(country) {
+        var marker = L.marker([country.lat, country.lng]).addTo(map);
+        marker.bindPopup('<b>' + country.name + '</b><br>' + country.info);
+    });
+    map.on('mousemove', function(e) {
+        var infoBox = document.querySelector('.info-box');
+        if (infoBox) {
+            map.removeLayer(infoBox);
+        }
+        
+        var countriesWithInfo = countries.filter(function(country) {
+            var latLng = L.latLng(country.lat, country.lng);
+            var point = map.latLngToContainerPoint(latLng);
+            return e.containerPoint.distanceTo(point) < 20;
+        });
+
+        if (countriesWithInfo.length > 0) {
+            var countryInfo = countriesWithInfo[0];
+            var infoBox = document.createElement('div');
+            infoBox.className = 'info-box';
+            infoBox.innerHTML = countryInfo.info;
+            infoBox.style.left = (e.containerPoint.x + 20) + 'px';
+            infoBox.style.top = (e.containerPoint.y - 10) + 'px';
+            document.getElementById('map').appendChild(infoBox);
+        }
+    });
+</script>
+</body>
+</html>
